@@ -1899,11 +1899,19 @@ async function syncToNotion() {
       syncedAt: new Date().toISOString(),
     };
 
-    const res = await fetch("/.netlify/functions/notion-sync", {
+    // 先試 Vercel 的 /api/，失敗再試 Netlify 的 /.netlify/functions/
+    let res = await fetch("/api/notion-sync", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    });
+    }).catch(() => null);
+    if (!res || res.status === 404) {
+      res = await fetch("/.netlify/functions/notion-sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) {
       throw new Error(data.error || "同步失敗");
