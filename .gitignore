@@ -1,0 +1,22 @@
+# OS / 編輯器
+.DS_Store
+Thumbs.db
+*.log
+
+# Node
+node_modules/
+
+# Netlify CLI 本地狀態（不要上傳）
+.netlify/
+
+# 環境變數 / 機密
+.env
+.env.*
+
+# 瀏覽器 / 預覽暫存
+.edge-tmp/
+screenshot-*.png
+*.zip
+
+# 包檔
+kate-budget-app.zip

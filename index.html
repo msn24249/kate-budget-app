@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#f7dfe8">
+    <title>凱特記帳</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow" id="today-label">今天</p>
+          <h1>凱特記帳</h1>
+        </div>
+        <button class="icon-button" type="button" data-view-target="setup" aria-label="開啟設定">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path>
+            <path d="M19.4 15a1.9 1.9 0 0 0 .38 2.1l.05.05a2.2 2.2 0 0 1-3.11 3.11l-.05-.05a1.9 1.9 0 0 0-2.1-.38 1.9 1.9 0 0 0-1.14 1.74V22a2.2 2.2 0 0 1-4.4 0v-.07a1.9 1.9 0 0 0-1.24-1.74 1.9 1.9 0 0 0-2.1.38l-.05.05a2.2 2.2 0 1 1-3.11-3.11l.05-.05a1.9 1.9 0 0 0 .38-2.1 1.9 1.9 0 0 0-1.74-1.14H2a2.2 2.2 0 0 1 0-4.4h.07a1.9 1.9 0 0 0 1.74-1.24 1.9 1.9 0 0 0-.38-2.1l-.05-.05a2.2 2.2 0 0 1 3.11-3.11l.05.05a1.9 1.9 0 0 0 2.1.38H8.7A1.9 1.9 0 0 0 9.84 2V2a2.2 2.2 0 0 1 4.4 0v.07a1.9 1.9 0 0 0 1.14 1.74 1.9 1.9 0 0 0 2.1-.38l.05-.05a2.2 2.2 0 0 1 3.11 3.11l-.05.05a1.9 1.9 0 0 0-.38 2.1v.06A1.9 1.9 0 0 0 22 9.84H22a2.2 2.2 0 0 1 0 4.4h-.07A1.9 1.9 0 0 0 19.4 15Z"></path>
+          </svg>
+        </button>
+      </header>
+
+      <main>
+        <section class="view is-active" id="view-home" aria-labelledby="home-title">
+          <div class="backup-banner is-hidden" id="backup-banner" role="alert">
+            <span class="backup-banner__icon">⚠️</span>
+            <div class="backup-banner__text">
+              <strong id="backup-banner-title">建議匯出備份</strong>
+              <small id="backup-banner-sub">iOS 有時會清掉本機資料，匯出 JSON 才安全</small>
+            </div>
+            <button class="mini-button" type="button" data-view-target="setup">立即備份</button>
+          </div>
+          <div class="hero-card">
+            <img class="hero-plant" src="assets/lavender.svg" alt="" aria-hidden="true">
+            <div class="hero-card__top">
+              <div>
+                <p class="eyebrow light">今日建議可花</p>
+                <h2 id="home-title">$0</h2>
+              </div>
+              <span class="status-pill status-pill--safe" id="daily-status">計算中</span>
+            </div>
+            <p class="hero-note" id="daily-note">只用已經在帳戶裡的錢計算，不預支未來收入。</p>
+            <button class="primary-action" type="button" data-view-target="entry">記一筆</button>
+          </div>
+
+          <div class="streak-card streak-card--cold" id="streak-card" aria-label="連續記帳天數">
+            <span class="streak-flame">💤</span>
+            <div class="streak-text">
+              <strong>今天還沒記</strong>
+              <small>最佳紀錄 0 天 · 自動扣款不算</small>
+            </div>
+          </div>
+
+          <section class="panel achievement-panel">
+            <div class="section-heading">
+              <h3>成就徽章</h3>
+              <span class="muted" id="achievement-count"></span>
+            </div>
+            <div class="achievement-strip" id="achievement-strip"></div>
+          </section>
+
+          <div class="soft-strip" aria-label="本月摘要">
+            <article class="metric-card metric-card--mint">
+              <span class="metric-label">可用現金</span>
+              <strong id="available-cash">$0</strong>
+              <small>只含列入今日可花的帳戶</small>
+            </article>
+            <article class="metric-card metric-card--lavender">
+              <span class="metric-label">未繳固定支出</span>
+              <strong id="unpaid-fixed">$0</strong>
+              <small>本月待繳提醒，不預扣</small>
+            </article>
+            <article class="metric-card metric-card--rose">
+              <span class="metric-label" id="debt-card-label">信用卡未繳</span>
+              <strong class="danger-text" id="credit-balance">$0</strong>
+              <small id="debt-card-meta">繳款不重複算支出</small>
+            </article>
+          </div>
+
+          <section class="panel">
+            <div class="section-heading">
+              <h3>本月狀態</h3>
+              <button class="text-button" type="button" data-view-target="bills">固定支出</button>
+            </div>
+            <div class="timeline-list" id="month-status"></div>
+          </section>
+
+          <section class="panel">
+            <div class="section-heading">
+              <h3>最近記錄</h3>
+              <button class="text-button" type="button" data-view-target="history">查看全部 →</button>
+            </div>
+            <div class="transaction-list" id="recent-transactions"></div>
+          </section>
+        </section>
+
+        <section class="view" id="view-setup" aria-labelledby="setup-title">
+          <div class="page-title">
+            <p class="eyebrow">設定</p>
+            <h2 id="setup-title">月目標與備份</h2>
+            <p>收入入帳時再記一筆；這裡只設定本月想先保留多少錢。</p>
+          </div>
+
+          <form class="form-stack" id="settings-form">
+            <label class="field">
+              <span>本月儲蓄目標剩餘</span>
+              <input id="goal-input" type="number" inputmode="numeric" min="0" step="1">
+            </label>
+            <button class="primary-action" type="submit">儲存設定</button>
+          </form>
+
+          <section class="panel">
+            <div class="section-heading">
+              <h3>資料備份</h3>
+              <span class="muted">存在這個瀏覽器</span>
+            </div>
+            <div class="button-stack">
+              <button class="secondary-action" type="button" id="export-data">匯出 JSON 備份</button>
+              <label class="secondary-action file-action">
+                匯入 JSON 備份
+                <input type="file" id="import-data" accept="application/json">
+              </label>
+            </div>
+            <p class="muted" id="last-backup-info" style="margin-top:8px;font-size:12px;"></p>
+          </section>
+
+          <section class="panel">
+            <div class="section-heading">
+              <h3>本機自動快照</h3>
+              <span class="muted">最近 14 天每日一份</span>
+            </div>
+            <p class="muted" style="margin:0 0 8px;font-size:12px;">每次儲存資料時，會自動存一份當天的快照。若資料不小心被改錯，可以從這裡還原。<br>⚠️ iOS 清掉 localStorage 時這些快照也會跟著消失，請定期匯出 JSON。</p>
+            <div class="snapshot-list" id="snapshot-list"></div>
+          </section>
+          <section class="panel">
+            <div class="section-heading">
+              <h3>分類管理</h3>
+              <span class="muted">記帳時使用</span>
+            </div>
+            <form class="inline-form" id="category-form">
+              <label class="field">
+                <span>新增分類</span>
+                <input id="category-new-name" type="text" placeholder="例如：美容、外送、機車">
+              </label>
+              <button class="secondary-action" type="submit">新增分類</button>
+            </form>
+            <div class="category-list" id="category-list"></div>
+          </section>
+        </section>
+
+        <section class="view" id="view-entry" aria-labelledby="entry-title">
+          <div class="page-title compact">
+            <p class="eyebrow">快速記帳</p>
+            <h2 id="entry-title">記一筆</h2>
+          </div>
+
+          <form class="entry-keypad" id="transaction-form">
+            <div class="segmented-grid segmented-grid--four entry-types">
+              <button class="choice is-selected" type="button" data-type-choice="expense">支出</button>
+              <button class="choice" type="button" data-type-choice="income">收入</button>
+              <button class="choice" type="button" data-type-choice="transfer">轉帳</button>
+              <button class="choice" type="button" data-type-choice="creditPayment">繳款</button>
+            </div>
+
+            <div class="category-grid-wrap" data-expense-field>
+              <div class="entry-section-label">分類</div>
+              <div class="category-grid" id="tx-category-grid"></div>
+            </div>
+
+            <div class="chip-row" data-from-field>
+              <div class="entry-section-label" id="from-label">付款帳戶</div>
+              <div class="chip-row__items" id="tx-from-chips"></div>
+            </div>
+
+            <div class="chip-row is-hidden" data-to-field>
+              <div class="entry-section-label" id="to-label">入帳帳戶</div>
+              <div class="chip-row__items" id="tx-to-chips"></div>
+            </div>
+
+            <div class="amount-display" aria-live="polite">
+              <span class="amount-display__currency">NT$</span>
+              <span class="amount-display__value" id="amount-display">0</span>
+            </div>
+
+            <input id="tx-note" type="text" class="note-input" placeholder="點選添加備註 (早餐 / 薪水 / 加油⋯)">
+
+            <input type="hidden" id="tx-amount">
+            <select id="tx-category" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
+            <select id="tx-from" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
+            <select id="tx-to" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
+
+            <div class="keypad" aria-label="數字鍵盤">
+              <button type="button" data-key="1">1</button>
+              <button type="button" data-key="2">2</button>
+              <button type="button" data-key="3">3</button>
+              <button type="button" data-key="back" class="keypad__action" aria-label="退一格">⌫</button>
+              <button type="button" data-key="4">4</button>
+              <button type="button" data-key="5">5</button>
+              <button type="button" data-key="6">6</button>
+              <button type="button" data-key="AC" class="keypad__action keypad__action--clear">AC</button>
+              <button type="button" data-key="7">7</button>
+              <button type="button" data-key="8">8</button>
+              <button type="button" data-key="9">9</button>
+              <button type="submit" class="keypad__confirm">確定</button>
+              <button type="button" data-key="00">00</button>
+              <button type="button" data-key="0">0</button>
+              <button type="button" data-key="000">000</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="view" id="view-bills" aria-labelledby="bills-title">
+          <div class="page-title compact">
+            <p class="eyebrow">固定支出</p>
+            <h2 id="bills-title">繳款日與付款方式</h2>
+          </div>
+
+          <form class="entry-card" id="bill-form">
+            <label class="field">
+              <span>名稱</span>
+              <input id="bill-name" type="text" placeholder="例如：房租" required>
+            </label>
+            <label class="field">
+              <span>金額</span>
+              <input id="bill-amount" type="number" inputmode="numeric" min="1" step="1" required>
+            </label>
+            <label class="field">
+              <span>繳款日</span>
+              <input id="bill-day" type="number" inputmode="numeric" min="1" max="31" step="1" required>
+            </label>
+            <label class="field">
+              <span>付款方式</span>
+              <select id="bill-account"></select>
+            </label>
+            <button class="secondary-action" type="submit">新增固定支出</button>
+          </form>
+
+          <div class="bill-list" id="bill-list"></div>
+        </section>
+
+        <section class="view" id="view-accounts" aria-labelledby="accounts-title">
+          <div class="page-title compact">
+            <p class="eyebrow">帳戶餘額</p>
+            <h2 id="accounts-title">付款工具與銀行戶頭</h2>
+          </div>
+
+          <button class="primary-action add-account-trigger" type="button" data-toggle-account-form>新增帳戶</button>
+
+          <form class="add-account-form is-hidden" id="account-form" aria-label="新增帳戶表單">
+            <h3 class="form-title" id="account-form-title">新增帳戶</h3>
+            <label class="field">
+              <span>帳戶名稱</span>
+              <input id="account-name" type="text" placeholder="例如：台新 Richart" required>
+            </label>
+            <label class="field">
+              <span>帳戶類型</span>
+              <select id="account-type">
+                <option value="bank">銀行戶頭</option>
+                <option value="debit">簽帳金融卡</option>
+                <option value="wallet">電子支付</option>
+                <option value="cash">現金</option>
+                <option value="credit">信用卡</option>
+                <option value="loan">貸款 / 分期</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>用途分類</span>
+              <select id="account-usage">
+                <option value="spend">花費帳戶</option>
+                <option value="save">儲蓄帳戶</option>
+                <option value="emergency">緊急預備金</option>
+                <option value="credit">信用卡帳戶</option>
+                <option value="debt">貸款 / 負債</option>
+                <option value="holding">暫存帳戶</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>目前餘額 / 信用卡未繳</span>
+              <input id="account-balance" type="number" inputmode="numeric" step="1" value="0">
+            </label>
+            <label class="toggle-row">
+              <input id="account-include" type="checkbox" checked>
+              <span>
+                <strong>列入今日可花</strong>
+                <small>關閉後仍追蹤餘額，但不拿來計算今日建議可花。</small>
+              </span>
+            </label>
+            <button class="secondary-action" type="submit" id="account-submit">儲存帳戶</button>
+          </form>
+
+          <section class="account-groups" aria-label="帳戶用途摘要">
+            <article class="group-card group-card--spend">
+              <span>花費帳戶</span>
+              <strong id="spend-account-total">$0</strong>
+              <small>列入今日可花</small>
+            </article>
+            <article class="group-card group-card--save">
+              <span>儲蓄 / 預備金</span>
+              <strong id="save-account-total">$0</strong>
+              <small>不列入今日可花</small>
+            </article>
+          </section>
+
+          <section class="debt-overview is-hidden" id="debt-overview" aria-label="負債總覽">
+            <div class="debt-overview__head">
+              <div>
+                <p class="eyebrow">負債總覽</p>
+                <strong id="debt-total-balance">$0</strong>
+                <small id="debt-total-meta">尚未設定起始債務</small>
+              </div>
+              <div class="debt-overview__pct" id="debt-total-pct">0%</div>
+            </div>
+            <div class="debt-progress__track">
+              <div class="debt-progress__fill" id="debt-total-fill" style="--bar-width: 0%"></div>
+            </div>
+          </section>
+
+          <div class="account-list" id="account-list"></div>
+        </section>
+
+        <section class="view" id="view-history" aria-labelledby="history-title">
+          <div class="page-title compact">
+            <p class="eyebrow">交易紀錄</p>
+            <h2 id="history-title">所有記帳</h2>
+          </div>
+
+          <input id="history-search" class="note-input history-search" placeholder="搜尋備註 / 分類 / 帳戶 / 金額...">
+
+          <div class="filter-chips">
+            <span class="filter-chips__label">月份</span>
+            <div class="filter-chips__row" id="history-month-chips"></div>
+          </div>
+
+          <div class="filter-chips">
+            <span class="filter-chips__label">類型</span>
+            <div class="filter-chips__row" id="history-type-chips"></div>
+          </div>
+
+          <div class="filter-chips">
+            <span class="filter-chips__label">分類</span>
+            <div class="filter-chips__row" id="history-category-chips"></div>
+          </div>
+
+          <div class="history-list" id="history-list"></div>
+          <div class="history-footer" id="history-footer"></div>
+        </section>
+
+        <section class="view" id="view-reports" aria-labelledby="reports-title">
+          <div class="page-title compact">
+            <p class="eyebrow">月度報表</p>
+            <h2 id="reports-title">這個月花到哪了</h2>
+          </div>
+
+          <div class="month-switcher" aria-label="月份切換">
+            <button class="mini-button" type="button" id="report-prev" aria-label="上個月">‹</button>
+            <div class="month-switcher__label">
+              <strong id="report-month-label">本月</strong>
+              <small id="report-month-sub"></small>
+            </div>
+            <button class="mini-button" type="button" id="report-next" aria-label="下個月">›</button>
+          </div>
+
+          <section class="report-hero">
+            <div>
+              <p class="eyebrow">本月支出總額</p>
+              <h3 id="report-total">$0</h3>
+              <p class="report-delta" id="report-delta">和上月比較</p>
+            </div>
+            <div class="report-hero__meta">
+              <small>共 <strong id="report-count">0</strong> 筆</small>
+              <small>日均 <strong id="report-daily">$0</strong></small>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="section-heading">
+              <h3>分類佔比</h3>
+              <span class="muted">由高到低</span>
+            </div>
+            <div class="category-chart" id="report-category-chart"></div>
+          </section>
+
+          <section class="panel">
+            <div class="section-heading">
+              <h3>TOP 3 燒最兇</h3>
+              <span class="muted">含上月變化</span>
+            </div>
+            <div class="report-top3" id="report-top3"></div>
+          </section>
+
+          <section class="panel">
+            <div class="section-heading">
+              <h3>每日花費</h3>
+              <span class="muted" id="report-daily-range"></span>
+            </div>
+            <div class="daily-chart" id="report-daily-chart" role="img" aria-label="每日花費柱狀圖"></div>
+          </section>
+        </section>
+      </main>
+
+      <nav class="bottom-tabs" aria-label="主要導覽">
+        <button class="tab is-active" type="button" data-view-target="home">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 10.8 12 3l9 7.8"></path>
+            <path d="M5 9.6V21h14V9.6"></path>
+            <path d="M9.5 21v-6h5v6"></path>
+          </svg>
+          <small>首頁</small>
+        </button>
+        <button class="tab" type="button" data-view-target="entry">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
+          </svg>
+          <small>記帳</small>
+        </button>
+        <button class="tab" type="button" data-view-target="reports">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 20V10"></path>
+            <path d="M10 20V4"></path>
+            <path d="M16 20v-8"></path>
+            <path d="M22 20H2"></path>
+          </svg>
+          <small>報表</small>
+        </button>
+        <button class="tab" type="button" data-view-target="bills">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 3h10v4H7z"></path>
+            <path d="M5 7h14v14H5z"></path>
+            <path d="M8 12h8"></path>
+            <path d="M8 16h5"></path>
+          </svg>
+          <small>固定</small>
+        </button>
+        <button class="tab" type="button" data-view-target="accounts">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h16v12H4z"></path>
+            <path d="M4 10h16"></path>
+            <path d="M7 15h4"></path>
+            <path d="M16.5 15.5h.01"></path>
+          </svg>
+          <small>帳戶</small>
+        </button>
+      </nav>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
