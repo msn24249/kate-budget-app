@@ -702,11 +702,13 @@ select:focus-visible {
 .keypad__confirm {
   grid-column: 4;
   grid-row: 3 / span 2;
-  background: linear-gradient(160deg, var(--pink) 0%, var(--purple) 100%);
+  background: linear-gradient(160deg, var(--pink-deep) 0%, var(--purple-deep) 100%);
   color: white !important;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 950;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.28);
   border-color: transparent;
-  box-shadow: 0 14px 30px rgba(134, 116, 173, 0.35);
+  box-shadow: 0 14px 30px rgba(90, 74, 120, 0.45);
 }
 
 .backup-banner {
