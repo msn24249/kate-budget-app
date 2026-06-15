@@ -6,12 +6,18 @@ Thumbs.db
 # Node
 node_modules/
 
+# Python
+__pycache__/
+*.py[cod]
+
 # Netlify CLI 本地狀態（不要上傳）
 .netlify/
 
 # 環境變數 / 機密
 .env
 .env.*
+!.env.example
+service_account.json
 
 # 瀏覽器 / 預覽暫存
 .edge-tmp/
