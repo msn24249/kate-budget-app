@@ -179,6 +179,32 @@ def health():
     return jsonify({"ok": True, "service": "line-bookkeeping-bot"})
 
 
+@app.get("/diagnostics")
+def diagnostics():
+    secret = request.headers.get("X-Cron-Secret") or request.args.get("secret", "")
+    if not CRON_SECRET or secret != CRON_SECRET:
+        return jsonify({"ok": False, "error": "Unauthorized"}), 401
+
+    checks = {
+        "line_channel_secret": bool(LINE_CHANNEL_SECRET),
+        "line_channel_access_token": bool(LINE_CHANNEL_ACCESS_TOKEN),
+        "google_sheet_id": bool(os.getenv("GOOGLE_SHEET_ID", "").strip()),
+        "google_service_account_json": bool(os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()),
+        "google_service_account_file": bool(os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "").strip()),
+        "line_push_user_id": bool(LINE_PUSH_USER_ID),
+        "cron_secret": bool(CRON_SECRET),
+    }
+    try:
+        store = _store()
+        checks["sheets_connected"] = True
+        checks["spreadsheet_title"] = store.spreadsheet.title
+        checks["worksheets"] = [worksheet.title for worksheet in store.spreadsheet.worksheets()]
+    except Exception as exc:
+        checks["sheets_connected"] = False
+        checks["sheets_error"] = str(exc)
+    return jsonify({"ok": True, "checks": checks})
+
+
 @app.post("/callback")
 def callback():
     signature = request.headers.get("X-Line-Signature", "")
