@@ -193,26 +193,34 @@ def callback():
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_line_message(event: MessageEvent):
     user_id = event.source.user_id if event.source else None
-    response = handle_text(event.message.text, user_id=user_id)
+    try:
+        response = handle_text(event.message.text, user_id=user_id)
+    except Exception as exc:
+        app.logger.exception("Failed to handle LINE message")
+        response = f"系統設定或資料寫入發生錯誤，請檢查 Render logs。\n\n錯誤：{exc}"
     _reply(event.reply_token, response)
 
 
 @app.route("/weekly-report", methods=["GET", "POST"])
 def weekly_report_endpoint():
-    secret = request.headers.get("X-Cron-Secret") or request.args.get("secret", "")
-    if not CRON_SECRET or secret != CRON_SECRET:
-        return jsonify({"ok": False, "error": "Unauthorized"}), 401
+    try:
+        secret = request.headers.get("X-Cron-Secret") or request.args.get("secret", "")
+        if not CRON_SECRET or secret != CRON_SECRET:
+            return jsonify({"ok": False, "error": "Unauthorized"}), 401
 
-    store = _store()
-    user_id = LINE_PUSH_USER_ID or store.get_setting("LINE_PUSH_USER_ID")
-    if not user_id:
-        return jsonify({"ok": False, "error": "Missing LINE_PUSH_USER_ID"}), 400
+        store = _store()
+        user_id = LINE_PUSH_USER_ID or store.get_setting("LINE_PUSH_USER_ID")
+        if not user_id:
+            return jsonify({"ok": False, "error": "Missing LINE_PUSH_USER_ID"}), 400
 
-    start_date = request.args.get("start")
-    end_date = request.args.get("end")
-    message = weekly_report(store, start_date=start_date, end_date=end_date)
-    _push(user_id, message)
-    return jsonify({"ok": True})
+        start_date = request.args.get("start")
+        end_date = request.args.get("end")
+        message = weekly_report(store, start_date=start_date, end_date=end_date)
+        _push(user_id, message)
+        return jsonify({"ok": True})
+    except Exception as exc:
+        app.logger.exception("Weekly report failed")
+        return jsonify({"ok": False, "error": str(exc)}), 500
 
 
 @app.get("/debug/parse")
