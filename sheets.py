@@ -129,6 +129,38 @@ class SheetsStore:
                 return
         worksheet.append_row([key, value], value_input_option="USER_ENTERED")
 
+    def delete_latest_entry(self) -> dict[str, Any] | None:
+        candidates: list[dict[str, Any]] = []
+        for title, entry_type in [
+            ("expenses", "支出"),
+            ("income", "收入"),
+            ("repayments", "還款"),
+        ]:
+            rows = self.worksheet(title).get_all_values()
+            headers = rows[0] if rows else []
+            for index, values in enumerate(rows[1:], start=2):
+                row = dict(zip(headers, values))
+                date_value = str(row.get("日期", "")).strip()
+                time_value = str(row.get("時間", "")).strip()
+                if not date_value:
+                    continue
+                candidates.append(
+                    {
+                        "worksheet": title,
+                        "row_index": index,
+                        "type": entry_type,
+                        "sort_key": f"{date_value} {time_value}",
+                        "row": row,
+                    }
+                )
+
+        if not candidates:
+            return None
+
+        latest = max(candidates, key=lambda item: item["sort_key"])
+        self.worksheet(latest["worksheet"]).delete_rows(latest["row_index"])
+        return latest
+
 
 def to_int(value: Any) -> int:
     if isinstance(value, int):

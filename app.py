@@ -22,7 +22,7 @@ from budget import budget_status, budget_warning, format_money, set_budget, set_
 from category import classify_expense, classify_income, is_income_item, parse_item_amount
 from debt import create_bill, create_debt, pay_bill, repay_debt, repayment_status
 from monthly_report import monthly_report
-from sheets import SheetsStore
+from sheets import SheetsStore, to_int
 from weekly_report import weekly_report
 
 
@@ -55,7 +55,8 @@ HELP_TEXT = """請輸入：
 繳卡費 LINE Bank信用卡 5000
 預算
 還款進度
-月回顧"""
+月回顧
+取消上一筆"""
 
 
 def _store() -> SheetsStore:
@@ -74,6 +75,30 @@ def _parse_positive_amount(text: str) -> int | None:
         return None
     amount = int(match.group(0))
     return amount if amount > 0 else None
+
+
+def _format_deleted_entry(deleted: dict) -> str:
+    row = deleted["row"]
+    entry_type = deleted["type"]
+    lines = ["已取消上一筆 ✅", "", f"類型：{entry_type}"]
+    if entry_type in {"支出", "收入"}:
+        lines.extend(
+            [
+                f"項目：{row.get('項目', '')}",
+                f"金額：{format_money(to_int(row.get('金額')))}",
+                f"分類：{row.get('分類', '')}",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                f"名稱：{row.get('名稱', '')}",
+                f"金額：{format_money(to_int(row.get('金額')))}",
+                "",
+                "提醒：已刪除還款明細，但固定債務或信用卡帳單累計金額需手動檢查。",
+            ]
+        )
+    return "\n".join(lines).strip()
 
 
 def _reply(reply_token: str, text: str) -> None:
@@ -110,6 +135,12 @@ def handle_text(text: str, user_id: str | None = None) -> str:
 
     if value in {"月回顧", "本月回顧"}:
         return monthly_report(store)
+
+    if value in {"取消上一筆", "刪除最後一筆", "刪除上一筆"}:
+        deleted = store.delete_latest_entry()
+        if not deleted:
+            return "目前沒有可以取消的明細。"
+        return _format_deleted_entry(deleted)
 
     if value.startswith("設定存錢目標"):
         amount = _parse_positive_amount(value[len("設定存錢目標") :])

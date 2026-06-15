@@ -250,6 +250,15 @@ https://你的-render-app.onrender.com/weekly-report?secret=你的CRON_SECRET
 本月回顧
 ```
 
+### 取消上一筆
+
+```text
+取消上一筆
+刪除最後一筆
+```
+
+這會刪除 `expenses`、`income`、`repayments` 裡時間最新的一筆明細。若刪到還款明細，系統會提醒固定債務或信用卡帳單的累計金額需要手動檢查。
+
 ## 分類規則
 
 分類規則在 `category.py`。
